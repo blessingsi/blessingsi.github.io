@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>kafka系列之生产者 | 知也无涯</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="kafka">
+    <meta name="description" content="概要在不同的生产场景下，我们对生产者的要求是不同的。在使用生产者写消息之前，首先要明确我们能否接受数据丢失？能否接受数据重复发送？系统延迟和数据准确性哪个更重要？对于不同的要求，我们要对Kafka进行不同的配置。 首先来看生产者发送消息的过程">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kafka系列之生产者">
+<meta property="og:url" content="http://yoursite.com/2017/11/18/kafka系列之生产者/index.html">
+<meta property="og:site_name" content="知也无涯">
+<meta property="og:description" content="概要在不同的生产场景下，我们对生产者的要求是不同的。在使用生产者写消息之前，首先要明确我们能否接受数据丢失？能否接受数据重复发送？系统延迟和数据准确性哪个更重要？对于不同的要求，我们要对Kafka进行不同的配置。 首先来看生产者发送消息的过程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2017/11/18/kafka系列之生产者/overview.png">
+<meta property="og:updated_time" content="2017-11-18T17:56:51.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="kafka系列之生产者">
+<meta name="twitter:description" content="概要在不同的生产场景下，我们对生产者的要求是不同的。在使用生产者写消息之前，首先要明确我们能否接受数据丢失？能否接受数据重复发送？系统延迟和数据准确性哪个更重要？对于不同的要求，我们要对Kafka进行不同的配置。 首先来看生产者发送消息的过程">
+<meta name="twitter:image" content="http://yoursite.com/2017/11/18/kafka系列之生产者/overview.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="知也无涯" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="//unpkg.com/hexo-theme-material-indigo@latest/css/style.css">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">blessing si</h5>
+          <a href="mailto:si.rc@outlook.com" title="si.rc@outlook.com" class="mail">si.rc@outlook.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                主页
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">kafka系列之生产者</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">kafka系列之生产者</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2017-11-18T13:29:06.000Z" itemprop="datePublished" class="page-time">
+  2017-11-18
+</time>
+
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#概要"><span class="post-toc-number">1.</span> <span class="post-toc-text">概要</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#创建一个生产者"><span class="post-toc-number">2.</span> <span class="post-toc-text">创建一个生产者</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#发送消息"><span class="post-toc-number">3.</span> <span class="post-toc-text">发送消息</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#最简单的方式"><span class="post-toc-number">3.1.</span> <span class="post-toc-text">最简单的方式</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#同步发送"><span class="post-toc-number">3.2.</span> <span class="post-toc-text">同步发送</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#异步发送"><span class="post-toc-number">3.3.</span> <span class="post-toc-text">异步发送</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#生产者配置参数"><span class="post-toc-number">4.</span> <span class="post-toc-text">生产者配置参数</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#序列化"><span class="post-toc-number">5.</span> <span class="post-toc-text"> 序列化</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-kafka系列之生产者"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">kafka系列之生产者</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2017-11-18 21:29:06" datetime="2017-11-18T13:29:06.000Z"  itemprop="datePublished">2017-11-18</time>
+
+            
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h2><p>在不同的生产场景下，我们对生产者的要求是不同的。在使用生产者写消息之前，首先要明确我们能否接受数据丢失？能否接受数据重复发送？系统延迟和数据准确性哪个更重要？对于不同的要求，我们要对Kafka进行不同的配置。</p>
+<p>首先来看生产者发送消息的过程<br><a id="more"></a><br><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="overview.png" alt="" title="">
+                </div>
+                <div class="image-caption"></div>
+            </figure><br>如上图所示，生产者写数据的过程主要有如下几个步骤。</p>
+<ol>
+<li>创建一个ProduceRecord</li>
+<li>调用send()方法进行发送操作，会将消息序列化为字节数组</li>
+<li>Partitioner来确定写入的partition。如果我们在第一步中指定了partition，partitioner会直接返回我们指定的partition，否则，Partitioner会根据消息的Key来确定要写入的partition。生产者在确定了消息的topic和partition后，会把它加到相同partition下的批量消息中，会有一个单独的线程来负责将这些消息发送给对应的broker</li>
+<li>当broker收到消息后，它会返回一个响应。如果消息被成功写进Kafka，会返回一个包含topic，partition和offset的消息给生产者，否则会返回错误消息。生产者接收到错误消息后，会重试几次，知道重试失败，返回错误信息给调用者</li>
+</ol>
+<h2 id="创建一个生产者"><a href="#创建一个生产者" class="headerlink" title="创建一个生产者"></a>创建一个生产者</h2><p>首先上代码。</p>
+<p>在Kafka的Apach客户端中，KafkaProducer提供了如下构造方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">KafkaProducer</span><span class="params">(Map&lt;String, Object&gt; configs)</span></span>&#123;&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">KafkaProducer</span><span class="params">(Map&lt;String, Object&gt; configs, Serializer&lt;K&gt; keySerializer, </span></span></div><div class="line">Serializer&lt;V&gt; valueSerializer)&#123;&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">KafkaProducer</span><span class="params">(Properties properties)</span></span>&#123;&#125;</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">KafkaProducer</span><span class="params">(Properties properties, Serializer&lt;K&gt; keySerializer, Serializer&lt;V&gt; valueSerializer)</span></span>&#123;&#125;</div></pre></td></tr></table></figure></p>
+<p>从构造方法中可以看出，构造一个生产者，我们需要提供若干配置信息。其中必须的有如下三个。</p>
+<ul>
+<li><em>bootstrap.servers</em><blockquote>
+<p>Kafka broker列表，是一组host：port格式的列表。生产者在初始化连接到集群后会从集群获得更多的元数据信息，所以我们不必传入集群中所有的broker，为了防止有机器正好挂掉，传入两三个broker就可以了。</p>
+</blockquote>
+</li>
+<li><em>key.serializer</em><blockquote>
+<p>kafka消息是一个<strong>K-V</strong>对，。这个参数的值就是生产者对Key进行序列化时所用的序列化器。这个类需要实现<em>org.apache.kafka.common.serialization.Serializer</em>接口。Kafka客户端中内置了ByteArray，String和Integer三种实现，所以如果你需要写入的消息属于以上三种，那么直接使用內建的序列化实现就可以了，否则，你需要自己实现接口，或者使用第三方的序列化库,<a href="#ser">后面</a>会继续讨论。注意，Kafka允许我们只写入value，而不写入key，但即使这样，<strong>这个参数也是必须的</strong>。</p>
+</blockquote>
+</li>
+<li><em>value.serializer</em><blockquote>
+<p>顾名思义，这个参数是生产者对消息value进行序列化时所用的序列化器，具体要求同上。</p>
+</blockquote>
+</li>
+</ul>
+<p>自己的代码实现<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Producer&lt;String, String&gt; <span class="title">newProducer</span><span class="params">()</span> </span>&#123;</div><div class="line">    Properties kafkaProps = <span class="keyword">new</span> Properties();</div><div class="line">    kafkaProps.put(<span class="string">"bootstrap.servers"</span>, <span class="string">"broker1:9092,broker2:9092"</span>);</div><div class="line">    kafkaProps.put(<span class="string">"key.serializer"</span>, <span class="string">"org.apache.kafka.common.serialization.StringSerializer"</span>);</div><div class="line">    kafkaProps.put(<span class="string">"value.serializer"</span>, <span class="string">"org.apache.kafka.common.serialization.StringSerializer"</span>);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> KafkaProducer&lt;String, String&gt;(kafkaProps);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>除了上面提到的三个必须的配置参数，生产者还有其他若干参数可以配置，具体情况请看后面。</p>
+<h2 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h2><p>构造好生产者后，我们就可以尝试发送消息了。Kafka提供了三种方式来进行发送操作。</p>
+<ul>
+<li>管杀不管埋(<em>Fire-and-forget</em>)<blockquote>
+<p>顾名思义，发完消息后就不管了。即不关注消息是否成功写入了。</p>
+</blockquote>
+</li>
+<li>同步发送<blockquote>
+<p>send()方法会返回一个<em>Future</em>对象，我们可以通过<em>get()</em>方法来同步地获取发送结果。</p>
+</blockquote>
+</li>
+<li>异步发送<blockquote>
+<p>我们可以给send()方法传入一个回调函数参数，当消息返回后，就会触发这个回调方法。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="最简单的方式"><a href="#最简单的方式" class="headerlink" title="最简单的方式"></a>最简单的方式</h3><p>先上代码<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">send</span><span class="params">()</span></span>&#123;</div><div class="line">    Producer&lt;String, String&gt; producer = newProducer();</div><div class="line">    ProducerRecord&lt;String, String&gt; record = <span class="keyword">new</span> ProducerRecord&lt;String, String&gt;(<span class="string">"topic"</span>, <span class="string">"this is key"</span>,</div><div class="line">    <span class="string">"I am value"</span>);</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        producer.send(record);</div><div class="line">    &#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这就是上面所提到的管杀不管埋方式。调用send()方法后不对返回消息进行任何处理。</p>
+<p>Producer接受<em>ProducerRecord</em>对象作为消息载体，因此在发送消息前，我们首先要构造一个。我们这里传入了<em>topic</em>,<em>key</em>,<em>value</em>三个参数。</p>
+<p>尽管我们决定了管杀不管埋，但是在消息发送之前，仍然可能发生其他异常让我们“杀”不成，比如序列化异常，Buffer耗尽异常等，因此仍然进行了try-catch处理</p>
+<h3 id="同步发送"><a href="#同步发送" class="headerlink" title="同步发送"></a>同步发送</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">send</span><span class="params">()</span></span>&#123;</div><div class="line">    Producer&lt;String, String&gt; producer = newProducer();</div><div class="line">    ProducerRecord&lt;String, String&gt; record = <span class="keyword">new</span> ProducerRecord&lt;String, String&gt;(<span class="string">"topic"</span>, <span class="string">"this is key"</span>,</div><div class="line">    <span class="string">"I am value"</span>);</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        producer.send(record).get();</div><div class="line">    &#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>代码和前一种方式很像，只是调用了<em>get()</em>方法来取回写入的结果。如果写入成功，我们就会得到一个RecordMetadata对象，携带了包括 <em>offset</em>在内的一系列元数据信息。如果写入失败，Kafka会视错误的种类决定是否重试。比如，当发生连接超时错误时，重新发送就可能奏效，相反，当错误信息为消息长度太大时，重试是没有意义的。</p>
+<h3 id="异步发送"><a href="#异步发送" class="headerlink" title="异步发送"></a>异步发送</h3><p>同步发送比管杀不管埋更加可靠，但是当我们对系统延迟要求比较高，或消息数量太多时，同步发送的等待时间就会影响系统的可用性。所以，我们再进一步，来看看异步发送。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">send</span><span class="params">()</span></span>&#123;</div><div class="line">    Producer&lt;String, String&gt; producer = newProducer();</div><div class="line">    ProducerRecord&lt;String, String&gt; record = <span class="keyword">new</span> ProducerRecord&lt;String, String&gt;(<span class="string">"topic"</span>, <span class="string">"this is key"</span>,<span class="string">"I am value"</span>);</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        producer.send(record, <span class="keyword">new</span> Callback() &#123;</div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompletion</span><span class="params">(RecordMetadata recordMetadata, Exception e)</span> </span>&#123;</div><div class="line">                <span class="keyword">if</span> (e!=<span class="keyword">null</span>)&#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                    <span class="keyword">return</span>;</div><div class="line">                &#125;</div><div class="line">                System.out.print(recordMetadata.offset());</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在异步发送方式中，我们传入了一个<em>org.apache.kafka.clients.producer.Callback</em>实例，作为send()方法返回后的回调，在这个回调方法中，我们可以对成功后的RecordMetadata和失败后的异常分别进行处理。</p>
+<h2 id="生产者配置参数"><a href="#生产者配置参数" class="headerlink" title="生产者配置参数"></a>生产者配置参数</h2><p>除了上面提到的构造所必须的三个参数外，生产者还有其他一系列配置参数，具体请查阅<a href="https://kafka.apache.org/documentation/#producerconfigs" target="_blank" rel="external">官方文档</a>。这里列出了一些重要的配置项</p>
+<ul>
+<li><p><em>acks</em></p>
+<p>  决定多少个partition replias写入后，一次写入被生产者认为写入成功，有三种取值，默认为1。</p>
+<ul>
+<li>0 生产者发送消息即认为写入成功，不会等待broker的返回。显然，这种情况下，系统的吞吐量最大，但可靠性最差。</li>
+<li>1 生产者在消息成功写入leader replica并收到来自broker的消息后，认为本次写入成功。如果leader写入失败，生产者会收到失败信息，并进行重试。但是，当leader挂掉，并且一个还未被写入本条消息的partition被选为leader时，这条消息仍会丢失。在这种配置下，系统的吞吐将取决于我们的发送方式。当我们同步发送时，相对前一种，延迟会大大增加，如果使用异步发送方式时，延迟则上升不明显，系统的吞吐量则受到正在发送中的消息数量的限制。</li>
+<li>all/-1 两种值等效。生产者需要等待消息成功写入所有partition replicas后才认为此次写入成功。显然，这种情况下，系统可靠性得到最大保障，但速度最慢。</li>
+</ul>
+</li>
+<li><p><em>buffer.memory</em></p>
+</li>
+<li><p><em>compression.type</em></p>
+<p>  压缩方式，默认为不压缩。可以被设置为<em>“snappy”</em>,<em>“gzip”</em>,<em>lz4</em>三种方式。其中<em>snappy</em>来自Google，占用资源最低，<em>gzip</em>占用资源较高，但是压缩比率最好。设置压缩可以降低系统在网络传输和存储方面的限制，而这二者通常是kafka系统的瓶颈所在。</p>
+</li>
+<li><p><em>retries</em></p>
+<p>  生产者失败后的重试次数。这个参数和<em>retry.backoff.ms</em>共同发挥作用。默认情况下，后者为100ms，即生产者会每隔100ms重试一次。推荐将重试间隔时间比partition选举leader的时间稍长。</p>
+</li>
+<li><p><em>batch.size</em>  &amp;&amp; <em>linger.ms</em></p>
+<p>  生产者会将发送到同一partition的消息一次批量发送过去。这两个参数分别决定了一批次的最大大小(bytes)和最长等待时间。两个条件达到任一，就会触发一次发送。默认情况下，linger.ms为0。</p>
+</li>
+</ul>
+<h2 id="序列化"><a href="#序列化" class="headerlink" title=" 序列化"></a><a name="ser"> 序列化</a></h2><p>在前面的例子中，我们提到了发送消息时需要对消息进行序列化，但是kafka客户端内部只提供了三种基本实现，如果我们要传输其他对象，就需要自己实现序列化，或使用其他序列化库。由于自己实现序列化有一系列不便之处，所以我们推荐使用第三方的序列化方式，比如JSON，Protobuf，Apache Avro，Thrift等。这里重点讨论Avro。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    Last updated: <time datetime="2017-11-18T17:56:51.879Z" itemprop="dateUpdated">2017-11-19 01:56:51</time>
+</span><br>
+
+
+        
+    </div>
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="blessing si">
+            blessing si
+        </a>
+    </footer>
+</blockquote>
+
+        
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2017/11/18/kafka系列之生产者/&title=《kafka系列之生产者》 — 知也无涯&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2017/11/18/kafka系列之生产者/&title=《kafka系列之生产者》 — 知也无涯&source=概要在不同的生产场景下，我们对生产者的要求是不同的。在使用生产者写消息之前，首先要明确我们能否接受数据丢失？能否接受数据重复发送？系统延迟和数据准确性哪个..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2017/11/18/kafka系列之生产者/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《kafka系列之生产者》 — 知也无涯&url=http://yoursite.com/2017/11/18/kafka系列之生产者/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2017/11/18/kafka系列之生产者/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between flex-row-reverse">
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/11/12/线程池/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">线程池</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>This blog is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>blessing si &copy; 2017</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2017/11/18/kafka系列之生产者/&title=《kafka系列之生产者》 — 知也无涯&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2017/11/18/kafka系列之生产者/&title=《kafka系列之生产者》 — 知也无涯&source=概要在不同的生产场景下，我们对生产者的要求是不同的。在使用生产者写消息之前，首先要明确我们能否接受数据丢失？能否接受数据重复发送？系统延迟和数据准确性哪个..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2017/11/18/kafka系列之生产者/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《kafka系列之生产者》 — 知也无涯&url=http://yoursite.com/2017/11/18/kafka系列之生产者/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2017/11/18/kafka系列之生产者/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=http://yoursite.com/2017/11/18/kafka系列之生产者/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
+
+
+</script>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/main.min.js"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="//unpkg.com/hexo-theme-material-indigo@latest/js/search.min.js" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '死鬼去哪里了！';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '(つェ⊂)咦!又好了!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
